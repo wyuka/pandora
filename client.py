@@ -1,6 +1,8 @@
 import monitor
+import proxy
+import backend
 
-class Client:
+class Client():
     def __init__(self):
         self.m_monitor = monitor.Monitor(self)
         self.m_monitor.addWatchLocation('/home/tirtha')

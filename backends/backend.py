@@ -1,13 +1,19 @@
 import proxy
 
-class Backend(proxy.proxyable):
+class Repo(proxy.proxyable):
     
-    def __init__():
+    def __init__(self):
         proxy.proxyable.__init__(self)
         
-    def pullChanges():
+    def initRepo(self, path):
         pass
     
-    def pushChanges():
+    def setRepo(self,path):
+        pass
+        
+    def pullChanges(self):
+        pass
+    
+    def pushChanges(self,changeDict):
         pass
     
