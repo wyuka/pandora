@@ -1,16 +1,19 @@
 import monitor
 import proxy
-import backend
+#import backends.backend
+from backends import gitBackend
 
 class Client():
     def __init__(self):
+        self.m_repo = gitBackend.Git()
+        self.m_repo.setRepo('/home/tirtha/pandora/pandoratest')
         self.m_monitor = monitor.Monitor(self)
-        self.m_monitor.addWatchLocation('/home/tirtha')
-        self.m_monitor.addWatchLocation('/home/tirtha/pandora')
+        self.m_monitor.addWatchLocation('/home/tirtha/pandora/pandoratest')
         self.m_monitor.startMonitoring()
                 
     def pushChanges(self, changeQueue):
         print changeQueue.dictionary()
+        self.m_repo.pushChanges(changeQueue.dictionary())
         changeQueue.clear()
         
     def destroy(self):

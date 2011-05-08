@@ -1,6 +1,6 @@
 import proxy
 
-class Repo(proxy.proxyable):
+class Backend(proxy.proxyable):
     
     def __init__(self):
         proxy.proxyable.__init__(self)
