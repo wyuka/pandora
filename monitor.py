@@ -2,6 +2,7 @@ import pyinotify
 import re
 import os
 import time
+import threading
 
 WAIT_SINCE_LAST_UPDATE = 10.0
 
@@ -141,18 +142,20 @@ class ChangeQueue():
 class Monitor():
     def __init__(self,client):
         self.m_client = client
+        self.m_timer = None
         self.m_changeQueue = ChangeQueue()
         self.m_watchManager = pyinotify.WatchManager()  # Watch Manager
         self.m_mask = pyinotify.IN_DELETE | pyinotify.IN_CREATE | pyinotify.IN_MODIFY | pyinotify.IN_MOVED_TO | pyinotify.IN_MOVED_FROM # watched events
         self.m_handler = EventHandler(self)
         
-        self.m_notifier = pyinotify.ThreadedNotifier(self.m_watchManager, self.m_handler)
+        self.m_notifier = pyinotify.ThreadedNotifier(self.m_watchManager, self.m_handler, timeout=10)
         self.m_wdDict = None
      
     def startMonitoring(self):
         self.m_notifier.start()
     
     def stopMonitoring(self):
+        time.sleep(0.5)
         self.m_notifier.stop()
     
     def addWatchLocation(self, path, recursive = False):
@@ -163,26 +166,16 @@ class Monitor():
             self.m_watchManager.rm_watch(self.wdDict[path],rec=recursive)
             
     def enqueue(self, path, event):
-        if time.time() - WAIT_SINCE_LAST_UPDATE > self.m_changeQueue.lastUpdatedTime():
-            self.m_client.pushChanges(self.m_changeQueue)
+        #if time.time() - WAIT_SINCE_LAST_UPDATE > self.m_changeQueue.lastUpdatedTime():
+        #    self.m_client.pushChanges(self.m_changeQueue)
+        if self.m_timer != None:
+            self.m_timer.cancel()
         self.m_changeQueue.add(path,event)
         
-
-#m = Monitor()
-#m.addWatchLocation('/home/tirtha',False)
-#m.addWatchLocation('/home/tirtha/pandora',False)
-#m.startMonitoring()
-#m.stopMonitoring()
-
-#while True:
-#    try:
-#        pass
-#    except KeyboardInterrupt:
-#        print "stopping monitoring ..."
-#        m.stopMonitoring()
-#        print "stopped monitoring."
-#        break
-#    except:
-#        m.stopMonitoring()
-#        raise
-        #raise
+        self.m_timer = threading.Timer(10.0,self.pushChanges)
+        self.m_timer.start()
+    
+    def pushChanges(self):
+        #print "here"
+        self.m_client.pushChanges(self.m_changeQueue)
+        
